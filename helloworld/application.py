@@ -1,17 +1,36 @@
 #!flask/bin/python
 import json
-from flask import Flask, Response
+import core
+from flask import Flask, request, Response, jsonify
 import optparse
 
 application = Flask(__name__)
 
-@application.route('/', methods=['GET'])
-def get():
-    return Response(json.dumps({'Output': 'He World'}), mimetype='application/json', status=200)
+@application.route('/signup', methods=['POST'])
+def signup():
+    credentials = request.get_json(force=True)
+    return Response(json.dumps(core.signup(credentials)), mimetype='application/json', status=200)
 
-@application.route('/', methods=['POST'])
-def post():
-    return Response(json.dumps({'Output': 'Hello World'}), mimetype='application/json', status=200)
+@application.route('/login', methods=['POST'])
+def login(): # Clients can use this route to check if login credentials are valid before trying to use them for anything else, but sessions are not persistent.
+    credentials = request.get_json(force=True)
+    return Response(json.dumps(core.authCheck(credentials)), mimetype='application/json', status=200)
+    
+@application.route('/startgame', methods=['POST'])
+def startGame():
+    credentials = request.get_json(force=True)
+    return Response(json.dumps(core.authCheck(credentials) or core.startGame(credentials)), mimetype='application/json', status=200) # The "or" operation enforces middleware
+
+@application.route('/getgame/<gameid>', methods=['GET'])
+def getGame():
+    credentials = request.get_json(force=True)
+    return Response(json.dumps(core.authCheck(credentials)), mimetype='application/json', status=200)
+
+@application.route('/movegame/<gameid>', methods=['POST'])
+def moveGame(gameid):
+    credentials = request.get_json(force=True)["credentials"] # This route should be called with a JSON containing credentials AND move
+    move = request.get_json(force=True)["move"]
+    return Response(json.dumps(core.authCheck(credentials) or core.gameCheck(credentials, gameid) or core.moveGame(move, gameid)), mimetype='application/json', status=200)
 
 if __name__ == '__main__':
     default_port = "80"
