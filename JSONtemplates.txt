@@ -1,27 +1,14 @@
 other JSON template"
 {
-	"username": "Nelson",
-	"password": "pass123"
+	"USERNAME": "Nelson",
+	"PASSWORD": "pass123"
 }
 
 move JSON template:
 {
-    "credentials": {
-        "username": "Nelson",
-        "password": "pass123"
+    "CREDENTIALS": {
+        "USERNAME": "Nelson",
+        "PASSWORD": "pass123"
     },
-    "move": "4"
-}
-
-{
-    "username": "Will",
-    "password": "pass123"
-}
-
-{
-    "credentials": {
-        "username": "Will",
-        "password": "pass123"
-    },
-    "move": "4"
+    "MOVE": "4"
 }

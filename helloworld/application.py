@@ -1,7 +1,7 @@
 #!flask/bin/python
 import json
-import core
-from flask import Flask, request, Response, jsonify
+import helloworld.core as core
+from flask import Flask, request, jsonify, Response
 import optparse
 
 application = Flask(__name__)
@@ -9,28 +9,29 @@ application = Flask(__name__)
 @application.route('/signup', methods=['POST'])
 def signup():
     credentials = request.get_json(force=True)
-    return Response(json.dumps(core.signup(credentials)), mimetype='application/json', status=200)
+    return core.signup(credentials) or core.goodReq('SUCCESSFUL SIGN UP')
 
 @application.route('/login', methods=['POST'])
 def login(): # Clients can use this route to check if login credentials are valid before trying to use them for anything else, but sessions are not persistent.
     credentials = request.get_json(force=True)
-    return Response(json.dumps(core.authCheck(credentials)), mimetype='application/json', status=200)
-    
+    return core.authCheck(credentials) or core.goodReq('SUCCESSFUL LOGIN')
+
 @application.route('/startgame', methods=['POST'])
 def startGame():
     credentials = request.get_json(force=True)
-    return Response(json.dumps(core.authCheck(credentials) or core.startGame(credentials)), mimetype='application/json', status=200) # The "or" operation enforces middleware
+    return core.authCheck(credentials) or core.startGame(credentials)
 
 @application.route('/getgame/<gameid>', methods=['GET'])
-def getGame():
+def getGame(gameid):
     credentials = request.get_json(force=True)
-    return Response(json.dumps(core.authCheck(credentials)), mimetype='application/json', status=200)
+    return core.authCheck(credentials) or core.getGame(gameid)
 
 @application.route('/movegame/<gameid>', methods=['POST'])
-def moveGame(gameid):
-    credentials = request.get_json(force=True)["credentials"] # This route should be called with a JSON containing credentials AND move
-    move = request.get_json(force=True)["move"]
-    return Response(json.dumps(core.authCheck(credentials) or core.gameCheck(credentials, gameid) or core.moveGame(move, gameid)), mimetype='application/json', status=200)
+def moveGame(gameid): # This route should be called with a JSON containing credentials AND move
+    data = request.get_json(force=True)
+    credentials = data["CREDENTIALS"]
+    move = data["MOVE"]
+    return core.authCheck(credentials) or core.gameCheck(credentials, gameid) or core.moveGame(move, gameid)
 
 if __name__ == '__main__':
     default_port = "80"
