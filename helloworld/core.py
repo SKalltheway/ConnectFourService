@@ -103,6 +103,7 @@ def moveGame(credentials, move, gameid):
         # Checks if game has ended
         if endCheck(board, column, row):
             games[gameid]["STATUS"] = "OVER"
+            games[gameid]["WINNER"] = board[column][row] # added this to show winner
             response = goodReq("GAME OVER", load = {"GAME": games[gameid]})
             endGame(credentials, gameid) # NO NEED TO END GAME THIS FAST: CANT UPDATE BOARD FOR SECOND PLAYER
             return response
@@ -139,7 +140,6 @@ def endGame(credentials, gameid):
         users[uname]['GAMEID'] = None
         uname = games[gameid]["PLAYERS"][1]
         users[uname]['GAMEID'] = None
-        print(users)
         # del games[gameid]
         # log win for scoreboard
         return # result = winner's name or 'TIE'
