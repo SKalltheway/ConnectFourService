@@ -31,7 +31,7 @@ def moveGame(gameid): # This route should be called with a JSON containing crede
     data = request.get_json(force=True)
     credentials = data["CREDENTIALS"]
     move = data["MOVE"]
-    return core.authCheck(credentials) or core.gameCheck(credentials, gameid) or core.moveGame(move, gameid)
+    return core.authCheck(credentials) or core.gameCheck(credentials, gameid) or core.moveGame(credentials, move, gameid)
 
 if __name__ == '__main__':
     default_port = "80"

@@ -1,6 +1,7 @@
 import json
 from flask import Flask, Response, jsonify
 import optparse
+import uuid
 from numpy import zeros
 
 BOARD_WIDTH = 7
@@ -59,6 +60,7 @@ def startGame(credentials):
         print("CREDENTIALS ARE:")
         print(credentials)
         if (users[credentials['USERNAME']]['GAMEID'] != None):
+            print(users[credentials['USERNAME']]['GAMEID'])
             return badReq('BAD START | USER ALREADY IN GAME')
         for gameid in games: # Checks if a queueing game exists
             if (games[gameid]["STATUS"] == "QUEUEING"):
@@ -67,7 +69,7 @@ def startGame(credentials):
                 users[credentials['USERNAME']]['GAMEID'] = gameid
                 return goodReq("YOU JOINED " + gameid, load = {"GAMEID": gameid, "GAME": games[gameid]})
         # Creates new game if none queueing
-        gameid = credentials["USERNAME"]
+        gameid = str(uuid.uuid1())
         users[credentials["USERNAME"]]['GAMEID'] = gameid
         games[gameid] = {"STATUS": "QUEUEING", "BOARD": zeros([BOARD_WIDTH, BOARD_HEIGHT], dtype = int).tolist(), "TURN": 0, "PLAYERS": [credentials["USERNAME"], ""]}
         return goodReq("YOU STARTED A NEW GAME", load = {"GAMEID": gameid, "GAME": games[gameid]})
@@ -82,7 +84,7 @@ def getGame(gameid):
     except:
         return badReq('BAD GETGAME | INTERNAL ERROR')
 
-def moveGame(move, gameid):
+def moveGame(credentials, move, gameid):
     try:
         if not(gameid in games):
             return badReq('BAD MOVE | GAMEID INVALID')
@@ -97,12 +99,12 @@ def moveGame(move, gameid):
                 break
             row += 1
         games[gameid]["BOARD"] = board
-        games[gameid]["TURN"] = (games[gameid]["TURN"] % 2 + 1) # Mathy way to switch turns
+        games[gameid]["TURN"] = (games[gameid]["TURN"] + 1) % 2 # Mathy way to switch turns
         # Checks if game has ended
         if endCheck(board, column, row):
             games[gameid]["STATUS"] = "OVER"
             response = goodReq("GAME OVER", load = {"GAME": games[gameid]})
-            endGame(gameid)
+            endGame(credentials, gameid) # NO NEED TO END GAME THIS FAST: CANT UPDATE BOARD FOR SECOND PLAYER
             return response
         return goodReq("SUCCESFUL MOVE", load = {"GAME": games[gameid]})
     except:
@@ -130,9 +132,15 @@ def endCheck(board, column, row):
     except:
         return True
 
-def endGame(gameid):
+def endGame(credentials, gameid):
     try:
-        del games[gameid]
+        #users[credentials['USERNAME']]['GAMEID'] = None
+        uname = games[gameid]["PLAYERS"][0]
+        users[uname]['GAMEID'] = None
+        uname = games[gameid]["PLAYERS"][1]
+        users[uname]['GAMEID'] = None
+        print(users)
+        # del games[gameid]
         # log win for scoreboard
         return # result = winner's name or 'TIE'
     except:
