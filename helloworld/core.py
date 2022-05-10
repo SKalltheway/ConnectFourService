@@ -2,7 +2,7 @@ import json
 from flask import Flask, Response, jsonify
 import optparse
 import uuid
-from numpy import zeros
+# from numpy import zeros
 
 BOARD_WIDTH = 7
 BOARD_HEIGHT = 6
@@ -55,6 +55,19 @@ def gameCheck(credentials, gameid):
     except:
         return badReq('BAD MOVE | INTERNAL ERROR')
 
+def zeros():
+    arr = [
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0],
+        [0,0,0,0,0,0]
+    ]
+    return arr
+
+
 def startGame(credentials):
     try:
         print("CREDENTIALS ARE:")
@@ -71,7 +84,7 @@ def startGame(credentials):
         # Creates new game if none queueing
         gameid = str(uuid.uuid1())
         users[credentials["USERNAME"]]['GAMEID'] = gameid
-        games[gameid] = {"STATUS": "QUEUEING", "BOARD": zeros([BOARD_WIDTH, BOARD_HEIGHT], dtype = int).tolist(), "TURN": 0, "PLAYERS": [credentials["USERNAME"], ""]}
+        games[gameid] = {"STATUS": "QUEUEING", "BOARD": zeros(), "TURN": 0, "PLAYERS": [credentials["USERNAME"], ""]}
         return goodReq("YOU STARTED A NEW GAME", load = {"GAMEID": gameid, "GAME": games[gameid]})
     except:
         return badReq('BAD START | INTERNAL ERROR')
